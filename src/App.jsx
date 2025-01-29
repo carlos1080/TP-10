@@ -2,86 +2,85 @@ import React, { useState } from 'react';
 
 const SimulationApp = () => {
 
-  const [results, setResults] = useState([]);
-  const [months, setMonths] = useState(12); // Para la cantidad de meses
-  const [range, setRange] = useState({ start: 1, end: 12 }); // Para el rango de iteraciones
-  const [pricePerUnit, setPricePerUnit] = useState(8)
+  const [resultados, setResultados] = useState([]);
+  const [meses, setMeses] = useState(12); // Para la cantidad de meses
+  const [rango, setRango] = useState({ inicio: 1, fin: 12 }); // Para el rango de iteraciones
+  const [precioPorUnidad, setPrecioPorUnidad] = useState(8)
 
   React.useEffect(() => {
-    setRange((prevRange) => ({
-      ...prevRange,
-      end: months, // Actualiza el final del rango al nuevo valor de months
+    setRango((prevRango) => ({
+      ...prevRango,
+      fin: meses, // Actualiza el final del rango al nuevo valor de meses
     }));
-  }, [months]); // Se ejecuta cada vez que months cambie
+  }, [meses]); // Se ejecuta cada vez que meses cambie
   
 
-  const runSimulation = () => {
-    const simulationResult = simulate(months);
-    setResults([simulationResult]);
+  const ejecutarSimulacion = () => {
+    const resultadoSimulacion = simular(meses);
+    setResultados([resultadoSimulacion]);
   };
 
-  const simulate = (months) => {
-    const costPerDozen = 45;
-    const fixedMonthlyCost = 683.34;
-    const minOrder = 30;
-    const maxOrder = 50;
+  const simular = (meses) => {
+    const costoPorDocena = 45;
+    const costoFijoMensual = 683.34;
+    const pedidoMinimo = 30;
+    const pedidoMaximo = 50;
 
-    const demands = [250, 300, 350, 400, 450, 500, 600];
-    const probabilities = [0.3, 0.05, 0.2, 0.15, 0.1, 0.1, 0.1];
-    const cumulativeProbabilities = probabilities.reduce((acc, prob, index) => {
-      acc.push((acc[index - 1] || 0) + prob);
-      return acc;
+    const demandas = [250, 300, 350, 400, 450, 500, 600];
+    const probabilidades = [0.3, 0.05, 0.2, 0.15, 0.1, 0.1, 0.1];
+    const probabilidadesAcumuladas = probabilidades.reduce((acumulador, prob, indice) => {
+      acumulador.push((acumulador[indice - 1] || 0) + prob);
+      return acumulador;
     }, []);
 
     let stock = 0;
     let Q = 30;
-    let totalProfit = 0;
-    const monthDetails = [];
+    let gananciaTotal = 0;
+    const detallesMensuales = [];
 
-    for (let month = 1; month <= months; month++) {
-      const rnd = Math.random();
-      const demand = demands[cumulativeProbabilities.findIndex((p) => rnd <= p)];
-      const demandInDozens = demand / 12;
+    for (let mes = 1; mes <= meses; mes++) {
+      const aleatorio = Math.random();
+      const demanda = demandas[probabilidadesAcumuladas.findIndex((p) => aleatorio <= p)];
+      const demandaEnDocenas = demanda / 12;
 
-      const unitsOrdered = Q * 12;
-      const totalUnitsAvailable = stock + unitsOrdered;
-      const unitsSold = Math.min(demand, totalUnitsAvailable);
-      stock = totalUnitsAvailable - unitsSold;
+      const unidadesPedidas = Q * 12;
+      const unidadesDisponibles = stock + unidadesPedidas;
+      const unidadesVendidas = Math.min(demanda, unidadesDisponibles);
+      stock = unidadesDisponibles - unidadesVendidas;
 
-      const orderCost = Q * costPerDozen;
-      const revenue = unitsSold * pricePerUnit;
-      const totalCost = orderCost + fixedMonthlyCost;
-      const profit = revenue - totalCost;
+      const costoPedido = Q * costoPorDocena;
+      const ingresos = unidadesVendidas * precioPorUnidad;
+      const costoTotal = costoPedido + costoFijoMensual;
+      const ganancia = ingresos - costoTotal;
 
-      totalProfit += profit;
+      gananciaTotal += ganancia;
 
-      monthDetails.push({
-        month,
+      detallesMensuales.push({
+        mes,
         Q,
-        unitsOrdered,
-        rnd: rnd.toFixed(4),
-        demand,
-        demandInDozens: demandInDozens.toFixed(2),
+        unidadesPedidas,
+        aleatorio: aleatorio.toFixed(4),
+        demanda,
+        demandaEnDocenas: demandaEnDocenas.toFixed(2),
         stock,
-        Ko: orderCost.toFixed(2),
-        Km: fixedMonthlyCost.toFixed(2),
-        totalCost: totalCost.toFixed(2),
-        revenue: revenue.toFixed(2),
-        profit: profit.toFixed(2),
+        costoPedido: costoPedido.toFixed(2),
+        costoFijoMensual: costoFijoMensual.toFixed(2),
+        costoTotal: costoTotal.toFixed(2),
+        ingresos: ingresos.toFixed(2),
+        ganancia: ganancia.toFixed(2),
       });
 
-      const nextQ = Math.min(
-        Math.max(Math.ceil(demand / 12), minOrder),
-        maxOrder
+      const siguienteQ = Math.min(
+        Math.max(Math.ceil(demanda / 12), pedidoMinimo),
+        pedidoMaximo
       );
-      Q = nextQ;
+      Q = siguienteQ;
     }
 
     return {
-
-      totalProfit: totalProfit.toFixed(2),
-      averageMonthlyProfit: (totalProfit / months).toFixed(2),
-      monthDetails,
+      gananciaTotal: gananciaTotal.toFixed(2),
+      gananciaPromedioMensual: (gananciaTotal / meses).toFixed(2),
+      detallesMensuales,
     };
   };
 
@@ -95,47 +94,41 @@ const SimulationApp = () => {
         <input
           type="number"
           className="p-2 border rounded w-full"
-          value={months}
-          onChange={(e) => setMonths(Number(e.target.value))} 
+          value={meses}
+          onChange={(e) => setMeses(Number(e.target.value))} 
         />
       </div>
 
       <div className="mb-4">
-
-      <label className="block mb-2 font-semibold">Precio por unidad:</label>
-
-
+        <label className="block mb-2 font-semibold">Precio por unidad:</label>
         <input
          type="number"
          className="p-2 border rounded w-full" 
-         value={pricePerUnit}
-         onChange={(e) => setPricePerUnit(Number(e.target.value))} 
+         value={precioPorUnidad}
+         onChange={(e) => setPrecioPorUnidad(Number(e.target.value))} 
          />
-         
-
       </div>
 
       <button
         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        onClick={runSimulation}
+        onClick={ejecutarSimulacion}
       >
         Iniciar Simulación
       </button>
 
-      {results.length > 0 && (
+      {resultados.length > 0 && (
         <div className="mt-6">
           <h2 className="text-xl font-semibold mb-2">Resultados:</h2>
 
           {/* Selección del rango de iteraciones */}
-
           <div className="mb-4 flex gap-4">
             <div>
               <label className="block mb-2 font-semibold">Inicio del rango:</label>
               <input
                 type="number"
                 className="p-2 border rounded w-full"
-                value={range.start}
-                onChange={(e) => setRange({ ...range, start: Number(e.target.value) })}
+                value={rango.inicio}
+                onChange={(e) => setRango({ ...rango, inicio: Number(e.target.value) })}
               />
             </div>
             <div>
@@ -143,18 +136,18 @@ const SimulationApp = () => {
               <input
                 type="number"
                 className="p-2 border rounded w-full"
-                value={range.end}
-                onChange={(e) => setRange({ ...range, end: Number(e.target.value) })}
-                max={months}
+                value={rango.fin}
+                onChange={(e) => setRango({ ...rango, fin: Number(e.target.value) })}
+                max={meses}
               />
             </div>
           </div>
 
-          {results.map((result, simIndex) => (
-            <div key={simIndex} className="mb-4">
+          {resultados.map((resultado, indiceSimulacion) => (
+            <div key={indiceSimulacion} className="mb-4">
               <h3 className="text-lg font-semibold">Resultado</h3>
-              <p>Ganancia Total: ${result.totalProfit}</p>
-              <p>Promedio Mensual: ${result.averageMonthlyProfit}</p>
+              <p>Ganancia Total: ${resultado.gananciaTotal}</p>
+              <p>Promedio Mensual: ${resultado.gananciaPromedioMensual}</p>
               <table className="w-full mt-4 text-sm text-left text-gray-500 border-collapse">
                 <thead className="text-gray-700 uppercase text-xs">
                   <tr>
@@ -165,35 +158,33 @@ const SimulationApp = () => {
                     <th className="px-4 py-2">Demanda</th>
                     <th className="px-4 py-2">Demanda (Docenas)</th>
                     <th className="px-4 py-2">Stock (Unidades)</th>
-                    <th className="px-4 py-2">Ko</th>
-                    <th className="px-4 py-2">Km</th>
+                    <th className="px-4 py-2">Costo Pedido</th>
+                    <th className="px-4 py-2">Costo Fijo Mensual</th>
                     <th className="px-4 py-2">Costo Total</th>
-                    <th className="px-4 py-2">Ganancia / Mes</th>
-                    <th className="px-4 py-2">Beneficio Neto</th>
+                    <th className="px-4 py-2">Ingresos</th>
+                    <th className="px-4 py-2">Ganancia</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {result.monthDetails
-
-                  //Slice me devuelve el mismo array pero cortado desde un inicio hasta un fin segun yo le ponga
-                    .slice(range.start - 1, range.end) 
-                    .map((month, index) => (
+                  {resultado.detallesMensuales
+                    .slice(rango.inicio - 1, rango.fin) 
+                    .map((mes, indice) => (
                       <tr
-                        key={index}
-                        className={`${index % 2 === 0 ? "bg-gray-50" : "bg-white"} hover:bg-gray-100`}
+                        key={indice}
+                        className={`${indice % 2 === 0 ? "bg-gray-50" : "bg-white"} hover:bg-gray-100`}
                         >
-                        <td className="px-4 py-2">{month.month}</td>
-                        <td className="px-4 py-2">{month.Q}</td>
-                        <td className="px-4 py-2">{month.unitsOrdered}</td>
-                        <td className="px-4 py-2">{month.rnd}</td>
-                        <td className="px-4 py-2">{month.demand}</td>
-                        <td className="px-4 py-2">{month.demandInDozens}</td>
-                        <td className="px-4 py-2">{month.stock}</td>
-                        <td className="px-4 py-2">${month.Ko}</td>
-                        <td className="px-4 py-2">${month.Km}</td>
-                        <td className="px-4 py-2">${month.totalCost}</td>
-                        <td className="px-4 py-2">${month.revenue}</td>
-                        <td className="px-4 py-2">${month.profit}</td>
+                        <td className="px-4 py-2">{mes.mes}</td>
+                        <td className="px-4 py-2">{mes.Q}</td>
+                        <td className="px-4 py-2">{mes.unidadesPedidas}</td>
+                        <td className="px-4 py-2">{mes.aleatorio}</td>
+                        <td className="px-4 py-2">{mes.demanda}</td>
+                        <td className="px-4 py-2">{mes.demandaEnDocenas}</td>
+                        <td className="px-4 py-2">{mes.stock}</td>
+                        <td className="px-4 py-2">${mes.costoPedido}</td>
+                        <td className="px-4 py-2">${mes.costoFijoMensual}</td>
+                        <td className="px-4 py-2">${mes.costoTotal}</td>
+                        <td className="px-4 py-2">${mes.ingresos}</td>
+                        <td className="px-4 py-2">${mes.ganancia}</td>
                       </tr>
                     ))}
                 </tbody>
