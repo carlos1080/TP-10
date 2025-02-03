@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const SimulationApp = () => {
 
@@ -31,14 +31,15 @@ const SimulationApp = () => {
 
     // ! Definimos las constantes,  probabilidades y el valor de los datos inicales
 
-
     const costoPorDocena = 45;
     const costoFijoMensual = 683.34;
     const pedidoMinimo = 30;
     const pedidoMaximo = 50;
 
     const demandas = [250, 300, 350, 400, 450, 500, 600];
+  
     const probabilidades = [0.3, 0.05, 0.2, 0.15, 0.1, 0.1, 0.1];
+  
     const probabilidadesAcumuladas = probabilidades.reduce((acumulador, prob, indice) => {
       acumulador.push((acumulador[indice - 1] || 0) + prob);
       return acumulador;
@@ -109,12 +110,12 @@ const SimulationApp = () => {
   const obtenerFilasPagina = (detalles) => { // Se toma como parametro de funcion un vector
     const inicio = (paginaActual - 1) * filasPorPagina;
     const fin = inicio + filasPorPagina;
-    return detalles.slice(inicio, fin); // retorna un vector sliceado segun paginas por fila
+    return detalles.slice(inicio, fin); // retorna un vector sliceado segun los indices (inicio, fin)
   };
 
 
   const totalPaginas = () => {
-    const filasVisibles = rango.fin - rango.inicio + 1;
+    const filasVisibles = rango.fin - rango.inicio + 1; // No sumas 1 a rango inicio, sino a la resta para compensar el mes faltante, Por ejemplo 7 - 3
     return Math.ceil(filasVisibles / filasPorPagina); // retona un numero entero
   };
 
@@ -126,20 +127,29 @@ const SimulationApp = () => {
 
   return (
 
-    <div className="p-6  rounded-lg shadow-md">
+    <div className="p-6  ">
 
-      <h1 className="text-2xl font-bold mb-4">Simulación de Inventarios</h1>
+
+          <div>
+        
+
+            <h1 className="text-2xl font-semibold">
+              Simulación de Inventarios
+            </h1>
+          </div>
+
+
       
 
      {/* Input para modificar la cantidad de meses */}
 
 
-      <div className="mb-4">
+      <div className="mb-4 mt-5">
         
         <label className="block mb-2 font-semibold">Cantidad de meses:</label>
         <input
           type="number"
-          className="p-2 border rounded w-fit"
+          className="p-2 border rounded w-fit "
           value={meses}
           onChange={(e) => setMeses(Number(e.target.value))}
         />
@@ -167,7 +177,8 @@ const SimulationApp = () => {
 
       </button>
 
-       {/* Renderizado condicional de la tabla */}
+
+      {/* Renderizado condicional de la tabla */}
 
       {resultados.length > 0 && ( 
         <div className="mt-6">
