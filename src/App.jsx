@@ -21,6 +21,8 @@ const SimulationApp = () => {
     setPaginaActual(1); 
   }, [meses]);
 
+  //Basicamente cada vez que se renderiza el vector de meses, se actualiza el rango y la pagina actual
+
   const ejecutarSimulacion = () => {
     const resultadoSimulacion = simular(meses);
     setResultados([resultadoSimulacion]);
@@ -58,7 +60,9 @@ const SimulationApp = () => {
 
       const unidadesPedidas = Q * 12;
       const unidadesDisponibles = stock + unidadesPedidas; //Este dato en si no se muestra en tabla pero me sirve para calcular el stock
+
       const unidadesVendidas = Math.min(demanda, unidadesDisponibles);
+
       stock = unidadesDisponibles - unidadesVendidas;
 
       const costoPedido = Q * costoPorDocena; //Cada docenas tiene un valor de $45
@@ -87,10 +91,7 @@ const SimulationApp = () => {
 
       //Se pushea un objeto por cada iteracion y cada objeto representa una fila de la tabla
 
-      const siguienteQ = Math.min(
-        Math.max(Math.ceil(demanda / 12), pedidoMinimo),
-        pedidoMaximo
-      );
+      const siguienteQ = Math.min( Math.max(Math.ceil(demanda / 12), pedidoMinimo), pedidoMaximo);
       Q = siguienteQ;
     }
 
@@ -129,12 +130,11 @@ const SimulationApp = () => {
 
     <div className="p-6  ">
 
-
-          <div>
-        
+          <div>        
 
             <h1 className="text-2xl font-semibold">
               Simulación de Inventarios
+
             </h1>
           </div>
 
@@ -152,6 +152,7 @@ const SimulationApp = () => {
           className="p-2 border rounded w-fit "
           value={meses}
           onChange={(e) => setMeses(Number(e.target.value))}
+          min='1'
         />
       </div>
 
@@ -197,6 +198,8 @@ const SimulationApp = () => {
                   setRango({ ...rango, inicio: Number(e.target.value) });
                   setPaginaActual(1);
                 }}
+
+                min='1'
               />
             </div>
 
@@ -214,6 +217,8 @@ const SimulationApp = () => {
                   setPaginaActual(1);
                 }}
                 max={meses}
+                min={rango.inicio}
+           
               />
             </div>
 
